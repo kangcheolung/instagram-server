@@ -13,6 +13,7 @@ jobs:
         env:
           APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
 
+
         with:
           host: ${{ secrets.EC2_HOST }} # EC2의 ip 주소
           username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username (ubuntu)
