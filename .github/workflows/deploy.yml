@@ -12,6 +12,11 @@ jobs:
       - name: Github Repository 올린 파일들을 불러오기
         uses: actions/checkout@v4
 
+      - name: Test
+        run: |
+          ls
+          pwd
+
 
 
       - name: JDK 17 버전 설치
