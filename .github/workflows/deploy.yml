@@ -12,11 +12,6 @@ jobs:
       - name: Github Repository 올린 파일들을 불러오기
         uses: actions/checkout@v4
 
-      - name: Test
-        run: |
-          ls
-          pwd
-
 
 
       - name: JDK 17 버전 설치
@@ -36,32 +31,25 @@ jobs:
       - name: 빌드된 파일 이름 변경하기
         run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
 
+      - name: 압축하기
+        run: tar -czvf $GITHUB_SHA.tar.gz project.jar appspec.yml scripts
 
-      - name: SCP로 EC2에 빌드된 파일 전송하기
-        uses: appleboy/scp-action@v0.1.7
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: project.jar   # 빌드된 파일 이름
-          target: /home/ubuntu/instagram-server/tobe  # EC2에서 파일이 저장될 위치
+          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
+      - name: S3에 프로젝트 폴더 업로드하기
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.tar.gz s3://instagram-server/$GITHUB_SHA.tar.gz
 
-      - name: SSH로 EC2에 접속하기
-        uses: appleboy/ssh-action@v1.0.3
 
-        with:
-          host: ${{ secrets.EC2_HOST }} # EC2의 ip 주소
-          username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username (ubuntu)
-          key: ${{ secrets.EC2_PRIVATE_KEY }} # 터미널에서 키파일 직접 들어가서 EC2의 Key 파일의 내부 텍스트
-          envs: APPLICATION_PROPERTIES
-          script_stop: true # 아래 script 중 실패하는 명령이 하나라도 있으면 실패로 처리
-          script: |
-            rm -rf /home/ubuntu/instagram-server/current  
-            mkdir /home/ubuntu/instagram-server/current
-            mv /home/ubuntu/instagram-server/tobe/project.jar /home/ubuntu/instagram-server/current/project.jar
-            cd /home/ubuntu/instagram-server/current
-            sudo fuser -k -n tcp 8080 || true
-            nohup java -jar project.jar > ./output.log 2>&1 &
-            rm -rf /home/ubuntu/instagram-server/tobe
+      - name: Code Deploy를 활용해 EC2에 프로젝트 코드 배포
+        run: aws deploy create-deployment # AWS CodeDeploy를 활용해 EC2에 프로젝트 코드 배포
+          --application-name instagram-server # CodeDeploy 애플리케이션 이름(인스타그램 서버)
+          --deployment-config-name CodeDeployDefault.AllAtOnce # 배포 구성 이름(모든 것을 한 번에)
+          --deployment-group-name Production # 배포 그룹 이름(Production) 
+          --s3-location bucket=instagram-server,bundleType=tgz,key=$GITHUB_SHA.tar.gz # S3 버킷 이름, 번들 유형, 키(파일 경로)
+
