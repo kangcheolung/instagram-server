@@ -52,4 +52,4 @@ jobs:
             --application-name instagram-server \  # CodeDeploy 애플리케이션 이름
             --deployment-config-name CodeDeployDefault.AllAtOnce \  # 배포 구성 (모든 인스턴스에 한 번에 배포)
             --deployment-group-name Production \  # 배포 그룹 이름
-            --s3-location bucket=instagram-server,bundleType=tgz,key=$GITHUB_SHA.tar.gz  # S3 위치 정보
+            --s3-location bucket=instagram-server-deploy,bundleType=tgz,key=$GITHUB_SHA.tar.gz  # S3 위치 정보
