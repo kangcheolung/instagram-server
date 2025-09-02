@@ -47,9 +47,9 @@ jobs:
 
 
       - name: Code Deploy를 활용해 EC2에 프로젝트 코드 배포
-        run: aws deploy create-deployment # AWS CodeDeploy를 활용해 EC2에 프로젝트 코드 배포
-          --application-name instagram-server # CodeDeploy 애플리케이션 이름(인스타그램 서버)
-          --deployment-config-name CodeDeployDefault.AllAtOnce # 배포 구성 이름(모든 것을 한 번에)
-          --deployment-group-name Production # 배포 그룹 이름(Production) 
-          --s3-location bucket=instagram-server,bundleType=tgz,key=$GITHUB_SHA.tar.gz # S3 버킷 이름, 번들 유형, 키(파일 경로)
-
+        run: |
+          aws deploy create-deployment \
+            --application-name instagram-server \  # CodeDeploy 애플리케이션 이름
+            --deployment-config-name CodeDeployDefault.AllAtOnce \  # 배포 구성 (모든 인스턴스에 한 번에 배포)
+            --deployment-group-name Production \  # 배포 그룹 이름
+            --s3-location bucket=instagram-server,bundleType=tgz,key=$GITHUB_SHA.tar.gz  # S3 위치 정보
