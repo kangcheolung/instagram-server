@@ -29,6 +29,7 @@ jobs:
       - name: 압축하기  # S3에 쉽게 업로드하기 위해 압축
         run: tar -czvf $GITHUB_SHA.tar.gz project.jar appspec.yml scripts
 
+
       - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
         uses: aws-actions/configure-aws-credentials@v4
         with:
